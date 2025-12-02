@@ -4,19 +4,60 @@
 <title>lo496.github.io</title>
 <style>
 h1 {
-  color: rgb(127, 15, 15);
+  color: rgb(0, 100, 0);
   font-family: courier;
+  text-align: center;
 }
-p {
-  color: rgb(0, 127, 0);
+h5 {
+  color: rgb(0, 150, 0);
   font-family: courier;
+  text-align: center;
 }
 </style>
 </head>
 <body>
 
-<h1>Testing out Github Pages</h1>    
-<p><i><q>Vkxw qfi wkfiykw vxh x kippmuxnt vxh zihw wkt pihwamny fd wkt vmnl</q></i></p>
+<h1>My Website</h1>
+
+<h5><i><q>Vkxw qfi wkfiykw vxh x kippmuxnt vxh zihw wkt pihwamny fd wkt vmnl</q></i></h5>
+
+<hr>
+
+<p>Dice Roller</p>
+
+Dice:<input id="diceInput" type="number"><br>
+Sides:<input id="sidesInput" type="number"><br>
+Goal:<input id="goalInput" type="number"><br>
+<button id="goButton" type="button" onclick="rollDice()">Go</button><br>
+
+<script>
+    function rollDice() {
+        let dice = document.getElementById("diceInput").value;
+        let sides = document.getElementById("sidesInput").value;
+        let goal = document.getElementById("goalInput").value;
+        if (dice == undefined || sides == undefined || goal == undefined || dice < 1 || sides < 1) {
+            document.getElementById("output").innerHTML = "";
+            return true;
+        }
+        const result = [];
+        let sum = 0;
+        let output = "";
+        for (let i = 0; i < dice; i++) {
+            let roll = Math.ceil(Math.random()*sides)
+            result[i] = roll;
+            sum += roll;
+            output += roll+"  "
+        }
+        output += "; sum = "+sum
+        document.getElementById("output").innerHTML = output;
+        if (sum > goal) { document.getElementById("output").style = "color:Green"; }
+        if (sum == goal) { document.getElementById("output").style = "color:Blue"; }
+        if (sum < goal) { document.getElementById("output").style = "color:Red"; }
+        return true;
+    }
+</script>
+
+<h3 id="output"></h3>
 
 </body>
 </html>
