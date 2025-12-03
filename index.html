@@ -3,50 +3,71 @@
 <head>
 <title>lo496.github.io</title>
 <style>
+body {
+    background-color: rgb(255, 255, 247);
+}
+header {
+    background-color: rgb(255, 255, 247);
+    padding: 10px;
+    text-align: center;
+    font-family: courier;
+}
 h1 {
-  color: rgb(0, 100, 0);
-  font-family: courier;
-  text-align: center;
+    color: rgb(0, 100, 0);
 }
 h3 {
     font-family:'Franklin Gothic Medium';
 }
 h5 {
-  color: rgb(0, 150, 0);
-  font-family: courier;
-  text-align: center;
+    color: rgb(0, 150, 0);
 }
 p {
     font-family: 'Times New Roman';
+}
+div.flex-container {
+  display: flex;
+  flex-direction: row;
+}
+@media screen and (max-width:400px) {
+  div.flex-container {
+    flex-direction: column;
+  }
 }
 </style>
 </head>
 <body>
 
-<h1>Welcome to my Website</h1>
-
-<h5><q>Vkxw qfi wkfiykw vxh x kippmuxnt vxh zihw wkt pihwamny fd wkt vmnl</q></h5>
-
-<hr>
+<header>
+    <h1>Welcome to my Website</h1>
+    <h5></h5>
+</header>
 
 <p>Dice Roller and Probability Calculator</p>
 
-<label for="diceInput">Number of Dice:</label><br>
-<input id="diceInput" type="number"><br>
-<label for="sidesInput">Number of Sides:</label><br>
-<input id="sidesInput" type="number"><br>
-<label for="goalInput">Goal:</label><br>
-<!-- <input type="radio" id="compLT" name="comparison" value="&lt;">
-<label for="compLT">&lt;</label><br>
-<input type="radio" id="compLE" name="comparison" value="&le;">
-<label for="compLE">&le;</label><br>
-<input type="radio" id="compET" name="comparison" value="=">
-<label for="compET">=</label><br>
-<input type="radio" id="compGE" name="comparison" value="&ge;" checked>
-<label for="compGE">&ge;</label><br>
-<input type="radio" id="compGT" name="comparison" value="&gt;">
-<label for="compGT">&gt;</label><br> -->
-<input id="goalInput" type="number"><br><br>
+<div class="flex-container">
+    <div>
+        <label for="diceInput">Number of Dice:</label><br>
+        <input id="diceInput" type="number"><br>
+        <label for="sidesInput">Number of Sides:</label><br>
+        <input id="sidesInput" type="number"><br>
+        <label for="goalInput">Goal:</label><br>
+        <input id="goalInput" type="number"><br>
+    </div>
+    <div>
+        <br>
+        <input type="radio" id="compLT" name="comparison" value=0>
+        <label for="compLT">&lt;</label><br>
+        <input type="radio" id="compLE" name="comparison" value=1>
+        <label for="compLE">&le;</label><br>
+        <input type="radio" id="compET" name="comparison" value=2>
+        <label for="compET">=</label><br>
+        <input type="radio" id="compGE" name="comparison" value=3 checked>
+        <label for="compGE">&ge;</label><br>
+        <input type="radio" id="compGT" name="comparison" value=4>
+        <label for="compGT">&gt;</label><br>
+    </div>
+</div><br>
+
 <button id="rollButton" type="button" onclick="rollDice()">Roll</button>
 <button id="calcButton" type="button" onclick="calculateProbability()">Calculate</button><br>
 
@@ -54,8 +75,18 @@ p {
     function rollDice() {
         let dice = Number(document.getElementById("diceInput").value);
         let sides = Number(document.getElementById("sidesInput").value);
-        let goal = Number(document.getElementById("goalInput").value);
-        if (dice < 1 || sides < 1 || document.getElementById("goalInput").value == "") {
+        let goal = document.getElementById("goalInput").value;
+        let noGoal = false;
+        if (goal == "") { noGoal = true; }
+        goal = Number(goal);
+        let modes = ["compLT","compLE","compET","compGE","compGT"];
+        let mode = "&ge;";
+        for (let i=0; i<5; i++) {
+            if (document.getElementById(modes[i]).checked) { 
+                mode = document.getElementById(modes[i]).value;
+            }
+        }
+        if (dice < 1 || sides < 1) {
             document.getElementById("output2").innerHTML = "";
             return true;
         }
@@ -70,30 +101,58 @@ p {
         }
         output += "; sum = "+sum
         document.getElementById("output2").innerHTML = output;
-        if (sum > goal) { document.getElementById("output2").style = "color:Green"; }
-        if (sum == goal) { document.getElementById("output2").style = "color:Blue"; }
-        if (sum < goal) { document.getElementById("output2").style = "color:Red"; }
+        if (goalCompare(sum, goal, mode)) { document.getElementById("output2").style = "color:Green"; }
+        if (!goalCompare(sum, goal, mode)) { document.getElementById("output2").style = "color:Red"; }
+        if (noGoal) { document.getElementById("output2").style = "color:Blue"; }
         return true;
     }
 
     function calculateProbability() {
         let dice = Number(document.getElementById("diceInput").value);
         let sides = Number(document.getElementById("sidesInput").value);
-        let goal = Number(document.getElementById("goalInput").value);
-        if (dice < 1 || sides < 1 || document.getElementById("goalInput").value == "") {
+        let goal = document.getElementById("goalInput").value;
+        let noGoal = false;
+        if (goal == "") { noGoal = true; }
+        goal = Number(goal);
+        let modes = ["compLT","compLE","compET","compGE","compGT"];
+        let mode = "&ge;";
+        for (let i=0; i<5; i++) {
+            if (document.getElementById(modes[i]).checked) { 
+                mode = document.getElementById(modes[i]).value;
+            }
+        }
+        if (dice < 1 || sides < 1 || noGoal) {
             document.getElementById("output1").innerHTML = "";
             return true;
         }
         else {
-            let prob = weightedCombinations(dice,sides,goal);
-            let output = "The probability of getting "+goal+" or more from rolling "+dice+" d"+sides+" is "+prob.toFixed(2)+"%."
+            let prob = weightedCombinations(dice,sides,goal,mode);
+            let compareText = "";
+            switch (mode) {
+                case '0':
+                    compareText = "less than "+goal;
+                    break;
+                case '1':
+                    compareText = goal+" or less";
+                    break;
+                case '2':
+                    compareText = "exactly "+goal;
+                    break;
+                case '3':
+                    compareText = goal+" or more";
+                    break;
+                case '4':
+                    compareText = "more than "+goal;
+                    break;
+            }
+            let output = "The probability of getting "+compareText+" from rolling "+dice+" d"+sides+" is "+prob.toFixed(2)+"%."
             if (prob == -1) { output = "Too big to calculate."; }
             document.getElementById("output1").innerHTML = output;
         }
         return true;
     }
     
-    function weightedCombinations(d,s,g) {
+    function weightedCombinations(d,s,g,m) {
         if (g <= d) { return 100; }
         if (g > d*s) { return 0; }
         let temp = [];
@@ -112,7 +171,7 @@ p {
             rep[i] = 1;
         }
         for (let i=0; i<combCount; i++) {
-            if (sumList(rep,d) >= g) {
+            if (goalCompare(sumList(rep,d), g, m)) {
                 goals += permutationCount(rep,d);
             }
             rep = repAdd(s,rep,d);
@@ -177,6 +236,28 @@ p {
             sum += list[i];
         }
         return sum
+    }
+
+    function goalCompare(item, goal, mode) {
+        let ret = false;
+        switch (mode) {
+            case '0':
+                ret = (item < goal);
+                break;
+            case '1':
+                ret = (item <= goal);
+                break;
+            case '2':
+                ret = (item == goal);
+                break;
+            case '3':
+                ret = (item >= goal);
+                break;
+            case '4':
+                ret = (item > goal);
+                break;
+        }
+        return ret;
     }
 </script>
 
