@@ -8,35 +8,55 @@ h1 {
   font-family: courier;
   text-align: center;
 }
+h3 {
+    font-family:'Franklin Gothic Medium';
+}
 h5 {
   color: rgb(0, 150, 0);
   font-family: courier;
   text-align: center;
 }
+p {
+    font-family: 'Times New Roman';
+}
 </style>
 </head>
 <body>
 
-<h1>My Website</h1>
+<h1>Welcome to my Website</h1>
 
-<h5><i><q>Vkxw qfi wkfiykw vxh x kippmuxnt vxh zihw wkt pihwamny fd wkt vmnl</q></i></h5>
+<h5><q>Vkxw qfi wkfiykw vxh x kippmuxnt vxh zihw wkt pihwamny fd wkt vmnl</q></h5>
 
 <hr>
 
-<p>Dice Roller</p>
+<p>Dice Roller and Probability Calculator</p>
 
-Dice:<input id="diceInput" type="number"><br>
-Sides:<input id="sidesInput" type="number"><br>
-Goal:<input id="goalInput" type="number"><br>
-<button id="goButton" type="button" onclick="rollDice()">Go</button><br>
+<label for="diceInput">Number of Dice:</label><br>
+<input id="diceInput" type="number"><br>
+<label for="sidesInput">Number of Sides:</label><br>
+<input id="sidesInput" type="number"><br>
+<label for="goalInput">Goal:</label><br>
+<!-- <input type="radio" id="compLT" name="comparison" value="&lt;">
+<label for="compLT">&lt;</label><br>
+<input type="radio" id="compLE" name="comparison" value="&le;">
+<label for="compLE">&le;</label><br>
+<input type="radio" id="compET" name="comparison" value="=">
+<label for="compET">=</label><br>
+<input type="radio" id="compGE" name="comparison" value="&ge;" checked>
+<label for="compGE">&ge;</label><br>
+<input type="radio" id="compGT" name="comparison" value="&gt;">
+<label for="compGT">&gt;</label><br> -->
+<input id="goalInput" type="number"><br><br>
+<button id="rollButton" type="button" onclick="rollDice()">Roll</button>
+<button id="calcButton" type="button" onclick="calculateProbability()">Calculate</button><br>
 
 <script>
     function rollDice() {
-        let dice = document.getElementById("diceInput").value;
-        let sides = document.getElementById("sidesInput").value;
-        let goal = document.getElementById("goalInput").value;
-        if (dice == undefined || sides == undefined || goal == undefined || dice < 1 || sides < 1) {
-            document.getElementById("output").innerHTML = "";
+        let dice = Number(document.getElementById("diceInput").value);
+        let sides = Number(document.getElementById("sidesInput").value);
+        let goal = Number(document.getElementById("goalInput").value);
+        if (dice < 1 || sides < 1 || document.getElementById("goalInput").value == "") {
+            document.getElementById("output2").innerHTML = "";
             return true;
         }
         const result = [];
@@ -49,15 +69,120 @@ Goal:<input id="goalInput" type="number"><br>
             output += roll+"  "
         }
         output += "; sum = "+sum
-        document.getElementById("output").innerHTML = output;
-        if (sum > goal) { document.getElementById("output").style = "color:Green"; }
-        if (sum == goal) { document.getElementById("output").style = "color:Blue"; }
-        if (sum < goal) { document.getElementById("output").style = "color:Red"; }
+        document.getElementById("output2").innerHTML = output;
+        if (sum > goal) { document.getElementById("output2").style = "color:Green"; }
+        if (sum == goal) { document.getElementById("output2").style = "color:Blue"; }
+        if (sum < goal) { document.getElementById("output2").style = "color:Red"; }
         return true;
+    }
+
+    function calculateProbability() {
+        let dice = Number(document.getElementById("diceInput").value);
+        let sides = Number(document.getElementById("sidesInput").value);
+        let goal = Number(document.getElementById("goalInput").value);
+        if (dice < 1 || sides < 1 || document.getElementById("goalInput").value == "") {
+            document.getElementById("output1").innerHTML = "";
+            return true;
+        }
+        else {
+            let prob = weightedCombinations(dice,sides,goal);
+            let output = "The probability of getting "+goal+" or more from rolling "+dice+" d"+sides+" is "+prob.toFixed(2)+"%."
+            if (prob == -1) { output = "Too big to calculate."; }
+            document.getElementById("output1").innerHTML = output;
+        }
+        return true;
+    }
+    
+    function weightedCombinations(d,s,g) {
+        if (g <= d) { return 100; }
+        if (g > d*s) { return 0; }
+        let temp = [];
+        for (let i=0; i<s; i++){
+            temp[i] = i+1;
+        }
+        for (let i=0; i<d-1; i++){
+            temp = consecSums(temp);
+        }
+        let combCount = temp[s-1];
+        let count = Math.pow(s,d);
+        if (count >= 9007199254740992) { return -1; }
+        let goals = 0;
+        let rep = [];
+        for (let i=0; i<d; i++) {
+            rep[i] = 1;
+        }
+        for (let i=0; i<combCount; i++) {
+            if (sumList(rep,d) >= g) {
+                goals += permutationCount(rep,d);
+            }
+            rep = repAdd(s,rep,d);
+        }
+        let prob = goals/count;
+        let probPercent = prob*100;
+        return probPercent;
+    }
+
+    function repAdd(base,rep,len) {
+        let toFill = [];
+        let filler = -1;
+        for (let i=0; i<len; i++) {
+            if (rep[i] != base) {
+                rep[i] += 1;
+                filler = rep[i];
+                break;
+            }
+            else {
+                toFill.push(i);
+            }
+        }
+        for (let i=0; i<toFill.length; i++) {
+            rep[i] = filler;
+        }
+        return rep;
+    }
+
+    function permutationCount(list,len) {
+        let repeatFactor = 1;
+        let repeats = 1;
+        for (let i=0; i<len-1; i++) {
+            if (list[i+1] == list[i]) {
+                repeats += 1;
+            }
+            else {
+                repeatFactor *= factorial(repeats);
+                repeats = 1;
+            }
+        }
+        repeatFactor *= factorial(repeats);
+        let count = factorial(len)/repeatFactor;
+        return count;
+    }
+
+    function factorial(x) {
+        if (x>1) { return x*factorial(x-1); }
+        else { return 1; }
+    }
+
+    function consecSums(list) {
+        let newList = [];
+        for (let i=0; i<list.length; i++) {
+            newList.push(sumList(list,i+1));
+        }
+        return newList;
+    }
+
+    function sumList(list,end) {
+        let sum = 0;
+        for (let i=0; i<end; i++) {
+            sum += list[i];
+        }
+        return sum
     }
 </script>
 
-<h3 id="output"></h3>
+<h3 id="output1"></h3>
+
+<h3 id="output2"></h3>
 
 </body>
 </html>
