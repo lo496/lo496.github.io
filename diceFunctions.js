@@ -41,7 +41,7 @@ function calculateProbability() {
     if (goal == "") { noGoal = true; }
     goal = Number(goal);
     let modes = ["compLT","compLE","compET","compGE","compGT"];
-    let mode = "&ge;";
+    let mode = '3';
     for (let i=0; i<5; i++) {
         if (document.getElementById(modes[i]).checked) { 
             mode = document.getElementById(modes[i]).value;
@@ -79,8 +79,22 @@ function calculateProbability() {
 }
 
 function weightedCombinations(d,s,g,m) {
-    if (g <= d) { return 100; }
-    if (g > d*s) { return 0; }
+    if (g < d) {
+        if (m == '0' || m == '1' || m == '2') { return 0; }
+        if (m == '3' || m == '4') { return 100; }
+    }
+    if (g == d) {
+        if (m == '0') { return 0; }
+        if (m == '3') { return 100; }
+    }
+    if (g == d*s) {
+        if (m == '1') { return 100; }
+        if (m == '4') { return 0; }
+    }
+    if (g > d*s) {
+        if (m == '0' || m == '1') { return 100; }
+        if (m == '2' || m == '3' || m == '4') { return 0; }
+    }
     let temp = [];
     for (let i=0; i<s; i++){
         temp[i] = i+1;
